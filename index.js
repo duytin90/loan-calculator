@@ -33,12 +33,12 @@ function Label (props) {
 function Input (props) {
 	var label;
 	if (props.label) {
-		label = <Label label={props.label} title={props.title}/>;
+		label = <Label {...props}/>;
 	}
 	return (
 		<div className="field" style={styles.field}>
 			{label}
-			<input type={props.type} id={props.id} value={props.value} onChange={props.onChange} style={_.extend(styles.input, styles.value)}/>
+			<input {...props} style={_.assign(styles.input, styles.value)}/>
 		</div>
 	);
 }
