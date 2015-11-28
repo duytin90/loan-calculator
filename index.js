@@ -4,21 +4,21 @@ var _ = require('lodash');
 
 var styles = {
 	app: {
-		'padding-left': '3rem'
+		paddingLeft: '3rem'
 	},
 	label: {
-		'flex-basis': '30%'
+		flexBasis: '30%'
 	},
 	field: {
 		display: 'flex',
 		padding: '.5rem'
 	},
 	input: {
-		'font-size': '1rem',
+		fontSize: '1rem',
 		padding: '.3rem'
 	},
 	value: {
-		'flex-basis': '65%',
+		flexBasis: '65%',
 		height: '2rem'
 	}
 };
@@ -110,7 +110,6 @@ ReactDOM.render(<App/>, document.querySelector('.main'));
 // P = L * k^n / (1 + k + k^2 + ... + k^(n-1))
 // P = L * k^n / ( (k^n - 1) / (k-1) )
 // P = L * (1+r)^n * r / ((1 + r)^n -1)
-
 
 // S = 1 + h ^ 1 + ... + h ^ n
 // h + h ^ 2 + ... + h ^ (n + 1) = S * h
