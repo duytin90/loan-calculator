@@ -31,14 +31,21 @@ function Label (props) {
 }
 
 function Input (props) {
-	var label;
+	var label, input;
 	if (props.label) {
 		label = <Label {...props}/>;
 	}
 	return (
 		<div className="field" style={styles.field}>
 			{label}
-			<input {...props} style={_.assign(styles.input, styles.value)}/>
+			<input {...props} style={_.assign(styles.input, styles.value)}
+				ref={function (node) {
+					input = node;
+				}}
+				onChange={function () {
+					props.onChange(input.value);
+				}}
+			/>
 		</div>
 	);
 }
@@ -60,9 +67,24 @@ function App (props) {
 	return (
 		<div className="app" style={styles.app}>
 			<h1>Loan Calculator</h1>
-			<Input type="number" id="loan-amount" label="Loan Amount $" value={props.amount} onChange={updateAmount}/>
-			<Input type="number" id="apr" label="APR (%)" title="Annual Percentage Rate" value={props.apr} onChange={updateAPR} />
-			<Input type="number" id="number-years" label="Number of years " value={props.duration} onChange={updateDuration}/>
+			<Input type="number" id="loan-amount" label="Loan Amount $" onChange={function (val) {
+				store.dispatch({
+					type: 'AMOUNT',
+					value: val
+				});
+			}}/>
+			<Input type="number" id="apr" label="APR (%)" title="Annual Percentage Rate" onChange={function (val) {
+				store.dispatch({
+					type: 'APR',
+					value: val
+				});
+			}} />
+			<Input type="number" id="number-years" label="Number of years " onChange={function (val) {
+				store.dispatch({
+					type: 'DURATION',
+					value: val
+				});
+			}}/>
 			<DisplayField id="payment" label="Monthly Payment $" value={props.payment.toFixed(2)}/>
 			<DisplayField id="total-interest-paid" label="Total Interest Paid $" value={props.interest.toFixed(2)}/>
 		</div>
@@ -104,27 +126,6 @@ function calculator (state, action) {
 	return newState;
 }
 var store = createStore(calculator);
-
-function updateAmount (e) {
-	store.dispatch({
-		type: 'AMOUNT',
-		value: Number(e.target.value.trim())
-	});
-}
-
-function updateAPR (e) {
-	store.dispatch({
-		type: 'APR',
-		value: Number(e.target.value.trim())
-	});
-}
-
-function updateDuration (e) {
-	store.dispatch({
-		type: 'DURATION',
-		value: Number(e.target.value.trim())
-	});
-}
 
 /**
  * @param {Number} L loan amount
