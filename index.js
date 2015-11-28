@@ -30,7 +30,7 @@ function Label (props) {
 	);
 }
 
-function Input (props) {
+function InputField (props) {
 	var label, input;
 	if (props.label) {
 		label = <Label {...props}/>;
@@ -59,7 +59,7 @@ function DisplayField (props) {
 	);
 }
 
-Input.defaultProps = {
+InputField.defaultProps = {
 	type: 'text'
 };
 
@@ -67,19 +67,19 @@ function App (props) {
 	return (
 		<div className="app" style={styles.app}>
 			<h1>Loan Calculator</h1>
-			<Input type="number" id="loan-amount" label="Loan Amount $" onChange={function (val) {
+			<InputField type="number" id="loan-amount" label="Loan Amount $" onChange={function (val) {
 				store.dispatch({
 					type: 'AMOUNT',
 					value: val
 				});
 			}}/>
-			<Input type="number" id="apr" label="APR (%)" title="Annual Percentage Rate" onChange={function (val) {
+			<InputField type="number" id="apr" label="APR (%)" title="Annual Percentage Rate" onChange={function (val) {
 				store.dispatch({
 					type: 'APR',
 					value: val
 				});
 			}} />
-			<Input type="number" id="number-years" label="Number of years " onChange={function (val) {
+			<InputField type="number" id="number-years" label="Number of years " onChange={function (val) {
 				store.dispatch({
 					type: 'DURATION',
 					value: val
