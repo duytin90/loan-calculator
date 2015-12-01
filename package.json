@@ -12,6 +12,7 @@
     "start": "mkdir -p dist && watchify -t reactify index.js -o dist/index.js & ecstatic"
   },
   "dependencies": {
+    "lodash": "^3.10.1",
     "react": "^0.14.2",
     "react-dom": "^0.14.2",
     "redux": "^3.0.4"
