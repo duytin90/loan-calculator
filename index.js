@@ -1,6 +1,7 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 var _ = require('lodash');
+var createStore = require('redux').createStore;
 
 var styles = {
 	app: {
@@ -29,15 +30,22 @@ function Label (props) {
 	);
 }
 
-function Input (props) {
-	var label;
+function InputField (props) {
+	var label, input;
 	if (props.label) {
-		label = <Label label={props.label} title={props.title}/>;
+		label = <Label {...props}/>;
 	}
 	return (
 		<div className="field" style={styles.field}>
 			{label}
-			<input type={props.type} id={props.id} value={props.value} onChange={props.onChange} style={_.extend(styles.input, styles.value)}/>
+			<input {...props} style={_.assign(styles.input, styles.value)}
+				ref={function (node) {
+					input = node;
+				}}
+				onChange={function () {
+					props.onChange(input.value);
+				}}
+			/>
 		</div>
 	);
 }
@@ -51,7 +59,7 @@ function DisplayField (props) {
 	);
 }
 
-Input.defaultProps = {
+InputField.defaultProps = {
 	type: 'text'
 };
 
@@ -59,42 +67,95 @@ function App (props) {
 	return (
 		<div className="app" style={styles.app}>
 			<h1>Loan Calculator</h1>
-			<Input type="number" id="loan-amount" label="Loan Amount $" onChange={getPayment}/>
-			<Input type="number" id="apr" label="APR (%)" title="Annual Percentage Rate" onChange={getPayment} />
-			<Input type="number" id="number-years" label="Number of years " onChange={getPayment}/>
-			<DisplayField id="payment" label="Monthly Payment $"/>
-			<DisplayField id="total-interest-paid" label="Total Interest Paid $"/>
+			<InputField type="number" id="loan-amount" label="Loan Amount $" onChange={function (val) {
+				store.dispatch({
+					type: 'AMOUNT',
+					value: val
+				});
+			}}/>
+			<InputField type="number" id="apr" label="APR (%)" title="Annual Percentage Rate" onChange={function (val) {
+				store.dispatch({
+					type: 'APR',
+					value: val
+				});
+			}} />
+			<InputField type="number" id="number-years" label="Number of years " onChange={function (val) {
+				store.dispatch({
+					type: 'DURATION',
+					value: val
+				});
+			}}/>
+			<DisplayField id="payment" label="Monthly Payment $" value={props.payment.toFixed(2)}/>
+			<DisplayField id="total-interest-paid" label="Total Interest Paid $" value={props.interest.toFixed(2)}/>
 		</div>
 	);
 }
 
-function getPayment (e) {
-	e.preventDefault();
-	var loanAmount = Number(document.querySelector('#loan-amount').value.trim()) * 100;
-	var apr = Number(document.querySelector('#apr').value.trim());
-	var numberYears = Number(document.querySelector('#number-years').value.trim());
-	var payment = calculateMonthlyPayment(loanAmount, apr, numberYears * 12);
-	document.querySelector('#payment').innerHTML = (payment / 100).toFixed(2);
-	totalInterest();
+function calculator (state, action) {
+	if (!state) {
+		return {
+			amount: 0,
+			apr: 0,
+			duration: 0,
+			payment: 0,
+			interest: 0
+		};
+	}
+	var newState;
+	switch (action.type) {
+		case 'AMOUNT':
+			newState = _.assign({}, state, {
+				amount: action.value
+			});
+			break;
+		case 'APR':
+			newState = _.assign({}, state, {
+				apr: action.value
+			});
+			break;
+		case 'DURATION':
+			newState = _.assign({}, state, {
+				duration: action.value
+			});
+			break;
+		default:
+			return state;
+	}
+	newState.payment = calculateMonthlyPayment(newState.amount, newState.apr, newState.duration);
+	newState.interest = calculateTotalInterest(newState.amount, newState.payment, newState.duration);
+	return newState;
 }
+var store = createStore(calculator);
 
+/**
+ * @param {Number} L loan amount
+ * @param {Number} apr Annual Percentage Rate (eg. 1.5)
+ * @param {Number} n duration of loan in years
+ */
 function calculateMonthlyPayment (L, apr, n) {
+	// get monthly rate
 	var r = apr / 1200;
-	return L * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+	// get number of months
+	var m = n * 12;
+	// do calculation in cents
+	var a = L * 100;
+
+	var p = a * r * Math.pow(1 + r, m) / (Math.pow(1 + r, m) - 1);
+
+	return p / 100;
 }
 
-function totalInterest () {
-	var monthlyPayment = Number(document.querySelector('#payment').innerHTML.trim());
-	var numberYears = Number(document.querySelector('#number-years').value.trim());
-	var loanAmount = Number(document.querySelector('#loan-amount').value.trim());
-	document.querySelector('#total-interest-paid').innerHTML = (monthlyPayment * numberYears * 12 - loanAmount).toFixed(2);
+function calculateTotalInterest (loanAmount, monthlyPayment, numberYears) {
+	return monthlyPayment * numberYears * 12 - loanAmount;
 }
 
-// function getDuration (){
+function render () {
+	ReactDOM.render(<App {...store.getState()}/>, document.querySelector('.main'));
+}
 
-// }
+store.subscribe(render);
 
-ReactDOM.render(<App/>, document.querySelector('.main'));
+render();
 
 // monthly payment
 // P = r * L * (1 + r) ^ n / ( (1 + r) ^ n - 1 )
