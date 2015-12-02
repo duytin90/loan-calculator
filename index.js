@@ -1,13 +1,13 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 var App = require('./containers/App');
-var store = require('./store');
+var configureStore = require('./store');
+var Provider = require('react-redux').Provider;
 
-function render () {
-	ReactDOM.render(<App {...store.getState()}/>, document.querySelector('.main'));
-}
-
-store.subscribe(render);
-
-render();
+ReactDOM.render(
+	<Provider store={configureStore()}>
+		<App />
+	</Provider>,
+	document.querySelector('.main')
+);
 
